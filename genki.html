@@ -82,8 +82,8 @@ body {
 /* Pixel Grid for Lobster */
 .pixel-canvas {
   display: inline-grid;
-  grid-template-columns: repeat(20, 6px);
-  grid-template-rows: repeat(22, 6px);
+  grid-template-columns: repeat(14, 7px);
+  grid-template-rows: repeat(16, 7px);
   gap: 0;
   image-rendering: pixelated;
   position: relative;
@@ -91,8 +91,8 @@ body {
 }
 .pixel-canvas i {
   display: block;
-  width: 6px;
-  height: 6px;
+  width: 7px;
+  height: 7px;
 }
 .p-R { background: #e04030; }
 .p-r { background: #c03020; }
@@ -794,30 +794,24 @@ body {
 </div>
 
 <script>
-// === Pixel Lobster Sprite Data (20x22) ===
+// === Pixel Lobster Sprite Data (14x16) ===
 const LOBSTER_SPRITE = [
-  'a_______________a__',  // 0  长触须
-  '_a_____________a___',  // 1
-  '__a___________a____',  // 2  触须弯曲
-  '__a___RRRR___a_____',  // 3  头顶
-  '______RRRRRR_______',  // 4  头
-  '_HH__RRweweRR__HH__',  // 5  钳子+眼睛
-  'HRRH_RRRrrRRR_HRRH_',  // 6  大钳子+脸
-  'HRRH_RRRRRRRR_HRRH_',  // 7  钳子+嘴
-  '_HH__RRRRRRRR__HH__',  // 8  钳子根部
-  '______RRrrRR_______',  // 9  脖子
-  '_____RRRrrRRR______',  // 10 身体节1
-  '_____RRDrrDRR______',  // 11 身体节1纹理
-  '______RRrrRR_______',  // 12 身体节2
-  '______RDrrDR_______',  // 13 身体节2纹理
-  '_______RrrR________',  // 14 身体节3
-  '______rRrrRr_______',  // 15 腰+腿
-  '_____r__Rr__r______',  // 16 腿
-  '____r___rr___r_____',  // 17 腿展开
-  '___r____rr____r____',  // 18 腿
-  '________rr_________',  // 19 尾柄
-  '______rRRRRr_______',  // 20 扇尾
-  '_____rRRRRRRr______',  // 21 扇尾展开
+  'a____________a',  // 0  触须（左右各一根）
+  '_a__RRRR__a___',  // 1  触须+头顶
+  '____RHHHR_____',  // 2  头（高光）
+  '___RweRweR____',  // 3  眼睛
+  '___RRRRRR_____',  // 4  脸
+  'HRR_RRRR_RRH__',  // 5  钳子+身体
+  'HHR_RRRR_RHH__',  // 6  钳子
+  '_H__RrrR__H___',  // 7  钳子尖+身体
+  '____RRRR______',  // 8  身体节1
+  '____rRRr______',  // 9  身体节2
+  '____RRRR______',  // 10 身体节3
+  '___r_RR_r_____',  // 11 腿
+  '___r_RR_r_____',  // 12 腿
+  '____rRRr______',  // 13 尾柄
+  '___RRHHRR_____',  // 14 尾扇
+  '__RRRHHRRR____',  // 15 尾扇展开
 ];
 
 // Tako sprite (8x8 simplified cute octopus)
@@ -835,8 +829,8 @@ const TAKO_SPRITE = [
 function renderSprite(container, spriteData, cols) {
   if (!container) return;
   container.innerHTML = '';
-  container.style.gridTemplateColumns = `repeat(${cols}, 6px)`;
-  container.style.gridTemplateRows = `repeat(${spriteData.length}, 6px)`;
+  container.style.gridTemplateColumns = `repeat(${cols}, 7px)`;
+  container.style.gridTemplateRows = `repeat(${spriteData.length}, 7px)`;
   for (const row of spriteData) {
     // Pad row to cols length
     const paddedRow = row.padEnd(cols, '_');
@@ -879,7 +873,7 @@ function initSprites() {
     const el = document.getElementById(id);
     if (el) {
       el.classList.add('pixel-canvas');
-      renderSprite(el, LOBSTER_SPRITE, 20);
+      renderSprite(el, LOBSTER_SPRITE, 14);
     }
   }
   // Render Tako in tako scene

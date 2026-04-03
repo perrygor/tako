@@ -1,17 +1,1 @@
-{
-  "tako": {
-    "energy": 75,
-    "hunger": 84,
-    "mood": 85,
-    "xp": 7,
-    "lastUpdate": 1775217000000,
-    "createdAt": 1775196000000,
-    "behavior": "thinking"
-  },
-  "genki": {
-    "status": "active",
-    "scene": "computer",
-    "lastActive": 1775217000000
-  },
-  "updatedAt": "2026-04-03T23:08:00+08:00"
-}
+{"tako":{"energy":75,"hunger":84,"mood":85,"xp":7,"lastUpdate":1775217672000,"createdAt":1775196000000,"behavior":"thinking"},"genki":{"status":"active","scene":"computer","lastActive":1775217672000},"updatedAt":"2026-04-03T23:21:00+08:00"}

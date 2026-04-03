@@ -1,17 +1,13 @@
 {
+  "genki": {
+    "scene": "computer",
+    "status": "active"
+  },
   "tako": {
     "energy": 76,
     "hunger": 86,
     "mood": 86,
-    "xp": 7,
-    "lastUpdate": 1775215260000,
-    "createdAt": 1775196000000,
-    "behavior": "thinking"
+    "activity": "思考中"
   },
-  "genki": {
-    "status": "active",
-    "lastActive": 1775215260000,
-    "scene": "computer"
-  },
-  "updatedAt": "2026-04-03T22:41:00+08:00"
+  "updatedAt": "2026-04-03T22:58:00+08:00"
 }

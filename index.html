@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>TAKO — 宠物养成</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#0a0e1a;--bg2:#0d1225;--card:#111832;--border:#1a2345;--text:#c8d6f0;--dim:#5a6a8a;--accent:#5040a0;--glow:#7060d0}
+body{background:var(--bg);color:var(--text);font-family:'SF Mono','Cascadia Code','Fira Code',monospace;min-height:100vh;display:flex;justify-content:center;padding:12px}
+.app{max-width:420px;width:100%;display:flex;flex-direction:column;gap:10px}
+/* Header */
+.hdr{text-align:center;padding:14px 0 6px;position:relative}
+.hdr h1{font-size:18px;letter-spacing:2px;color:#e0d8ff;text-shadow:0 0 20px rgba(80,64,160,.5)}
+.hdr .sub{font-size:11px;color:var(--dim);margin-top:2px}
+.stars-bg{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;opacity:0;transition:opacity 1s}
+.stars-bg.show{opacity:1}
+.stars-bg i{position:absolute;width:2px;height:2px;background:#fff;border-radius:50%;animation:twinkle 3s ease-in-out infinite alternate}
+@keyframes twinkle{0%{opacity:.2}100%{opacity:.8}}
+/* Pixel Grid */
+.stage{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px 10px 14px;text-align:center;position:relative;overflow:hidden;z-index:1}
+.pg-wrap{display:inline-block;position:relative;cursor:pointer}
+.pg{display:grid;grid-template-columns:repeat(14,10px);grid-template-rows:repeat(21,10px);gap:0;image-rendering:pixelated;animation:float 3s ease-in-out infinite;transition:transform .3s ease,filter .3s ease}
+.pg:hover{transform:scale(1.05);filter:brightness(1.15) drop-shadow(0 0 12px rgba(80,140,255,.4))}
+.pg:active{transform:scale(0.95);filter:hue-rotate(25deg) brightness(1.25) drop-shadow(0 0 16px rgba(160,100,255,.6))}
+.pg i{width:10px;height:10px;display:block;transition:opacity .15s,background .15s,transform .15s}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+/* Eye blink */
+.pg .eye{transition:opacity .1s}
+.blink .pg .eye{opacity:0!important}
+/* Star glow */
+.pg .star{animation:starglow 2s ease-in-out infinite alternate}
+@keyframes starglow{0%{filter:brightness(1)}100%{filter:brightness(1.8);box-shadow:0 0 4px #d0b040}}
+/* Tentacle sway */
+.pg .tent{transition:transform .3s}
+.pg .t15,.pg .t16{animation:sway1 2s ease-in-out infinite alternate}
+.pg .t17,.pg .t18{animation:sway2 2.5s ease-in-out infinite alternate}
+.pg .t19{animation:sway3 3s ease-in-out infinite alternate}
+@keyframes sway1{0%{transform:translateX(0)}100%{transform:translateX(1px)}}
+@keyframes sway2{0%{transform:translateX(0)}100%{transform:translateX(-1px)}}
+@keyframes sway3{0%{transform:translateY(0)}100%{transform:translateY(1px)}}
+/* State label */
+.state-label{font-size:12px;color:var(--dim);margin-top:8px;min-height:18px;transition:color .3s}
+/* zzZ animation */
+.zzz{position:absolute;top:10px;right:calc(50% - 60px);font-size:14px;color:#7a8aaa;opacity:0;pointer-events:none}
+.zzz.show{animation:zzz 2s ease-in-out infinite}
+@keyframes zzz{0%{opacity:0;transform:translateY(0) scale(1)}50%{opacity:1;transform:translateY(-12px) scale(1.2)}100%{opacity:0;transform:translateY(-24px) scale(.8)}}
+/* States */
+.state-sleeping .pg{animation:float 6s ease-in-out infinite;filter:brightness(.8)}
+.state-sleeping .pg .eye{opacity:.2!important}
+.state-sleeping .pg .tent{animation:none!important}
+.state-hungry .pg{filter:brightness(.7)}
+.state-hungry .pg .tent{animation-duration:4s!important}
+.state-hungry .pg .mouth{animation:mouthblink 1s infinite}
+@keyframes mouthblink{0%,100%{opacity:1}50%{opacity:.3}}
+.state-happy .pg{filter:brightness(1.3)}
+.state-happy .pg .tent{animation-duration:.5s!important}
+.state-happy .pg .star{animation:starglow .3s ease-in-out infinite alternate}
+.state-sad .pg{filter:saturate(.3)}
+.state-sad .pg{animation:floatsad 3s ease-in-out infinite}
+.state-sad .pg .tent{transform:translateY(2px)}
+@keyframes floatsad{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+/* Particles */
+.particles{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;overflow:hidden}
+.particle{position:absolute;width:4px;height:4px;border-radius:50%;animation:particleUp 1s ease-out forwards;opacity:0}
+@keyframes particleUp{0%{opacity:1;transform:translateY(0) scale(1)}100%{opacity:0;transform:translateY(-40px) scale(0)}}
+/* Stats */
+.stats{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px 16px;display:flex;flex-direction:column;gap:8px;z-index:1}
+.stat-row{display:flex;align-items:center;gap:8px;font-size:13px}
+.stat-row .icon{width:20px;text-align:center;flex-shrink:0}
+.stat-row .label{width:32px;color:var(--dim);flex-shrink:0}
+.bar-wrap{flex:1;height:10px;background:#1a1a2e;border-radius:5px;overflow:hidden;position:relative}
+.bar-fill{height:100%;border-radius:5px;transition:width .5s ease}
+.stat-row .val{width:28px;text-align:right;font-size:12px;color:var(--dim);flex-shrink:0}
+.xp-row{font-size:13px;display:flex;align-items:center;gap:8px}
+.xp-row .icon{width:20px;text-align:center}
+.xp-row .label{color:var(--dim)}
+.xp-row .xp-val{color:#d0b040;font-weight:bold}
+/* Buttons */
+.btns{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px;z-index:1}
+.btn{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px 4px;text-align:center;cursor:pointer;transition:all .2s;font-size:12px;color:var(--text);font-family:inherit;line-height:1.3}
+.btn:hover{border-color:var(--glow);box-shadow:0 0 12px rgba(112,96,208,.3)}
+.btn:active{transform:scale(.95);background:#1a2040}
+.btn .emoji{font-size:20px;display:block;margin-bottom:2px}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+#btnSync{background:linear-gradient(135deg,var(--card),#1a2040);border-color:#2a3060}
+#btnSync:hover{border-color:#5060c0;box-shadow:0 0 12px rgba(80,96,192,.3)}
+/* Dialog */
+.dialog{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:12px 16px;display:flex;align-items:flex-start;gap:10px;min-height:50px;z-index:1}
+.dialog .avatar{font-size:24px;flex-shrink:0;margin-top:2px}
+.dialog .bubble{background:#1a2040;border-radius:10px;padding:8px 12px;font-size:13px;color:#b0b8d0;flex:1;min-height:32px;display:flex;align-items:center;line-height:1.4}
+/* Footer */
+.footer{text-align:center;font-size:11px;color:var(--dim);padding:4px 0 12px;z-index:1}
+/* Night overlay */
+.night-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,10,.3);pointer-events:none;z-index:0;opacity:0;transition:opacity 1s}
+.night-overlay.evening{opacity:.3}
+.night-overlay.night{opacity:.5}
+/* Responsive pixel size */
+@media(max-width:360px){
+  .pg{grid-template-columns:repeat(14,8px);grid-template-rows:repeat(21,8px)}
+  .pg i{width:8px;height:8px}
+}
+</style>
+</head>
+<body>
+<div class="night-overlay" id="nightOverlay"></div>
+<div class="stars-bg" id="starsBg"></div>
+<div class="app">
+  <div class="hdr">
+    <h1>🐙 TAKO — 宠物养成</h1>
+    <div class="sub">★★ Uncommon · 巫师章鱼</div>
+  </div>
+  <div class="stage" id="stage">
+    <div class="zzz" id="zzz">zzZ</div>
+    <div class="particles" id="particles"></div>
+    <div class="pg-wrap" id="pgWrap" onclick="pokeTako()">
+      <div class="pg" id="pg"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i style="background:#1a1228"></i><i style="background:#2a1a40"></i><i style="background:#2a1a40"></i><i style="background:#1a1228"></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i style="background:#1a1228"></i><i style="background:#2a1a40"></i><i style="background:#2a1a40"></i><i style="background:#2a1a40"></i><i style="background:#2a1a40"></i><i style="background:#1a1228"></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i style="background:#1a1228"></i><i style="background:#2a1a40"></i><i style="background:#2a1a40"></i><i class="star" style="background:#d0b040"></i><i style="background:#2a1a40"></i><i style="background:#2a1a40"></i><i style="background:#2a1a40"></i><i style="background:#1a1228"></i><i></i><i></i><i></i><i></i><i></i><i style="background:#1a1228"></i><i style="background:#5040a0"></i><i style="background:#5040a0"></i><i style="background:#5040a0"></i><i style="background:#5040a0"></i><i style="background:#5040a0"></i><i style="background:#5040a0"></i><i style="background:#5040a0"></i><i style="background:#5040a0"></i><i style="background:#1a1228"></i><i></i><i></i><i></i><i></i><i style="background:#1a1228"></i><i style="background:#2a1a40"></i><i style="background:#2a1a40"></i><i style="background:#2a1a40"></i><i style="background:#2a1a40"></i><i style="background:#2a1a40"></i><i style="background:#2a1a40"></i><i style="background:#2a1a40"></i><i style="background:#2a1a40"></i><i style="background:#1a1228"></i><i></i><i></i><i></i><i style="background:#2a4a7a"></i><i style="background:#2a4a7a"></i><i style="background:#2a4a7a"></i><i style="background:#2a4a7a"></i><i style="background:#2a4a7a"></i><i style="background:#2a4a7a"></i><i style="background:#2a4a7a"></i><i style="background:#2a4a7a"></i><i style="background:#2a4a7a"></i><i style="background:#2a4a7a"></i><i style="background:#2a4a7a"></i><i style="background:#2a4a7a"></i><i></i><i></i><i style="background:#2a4a7a"></i><i style="background:#3a5a9a"></i><i style="background:#3a5a9a"></i><i style="background:#3a5a9a"></i><i style="background:#3a5a9a"></i><i style="background:#3a5a9a"></i><i style="background:#3a5a9a"></i><i style="background:#3a5a9a"></i><i style="background:#3a5a9a"></i><i style="background:#3a5a9a"></i><i style="background:#2a4a7a"></i><i style="background:#2a4a7a"></i><i></i><i style="background:#2a4a7a"></i><i style="background:#3a5a9a"></i><i style="background:#3a5a9a"></i><i style="background:#3a5a9a"></i><i style="background:#3a5a9a"></i><i style="background:#3a5a9a"></i><i style="background:#3a5a9a"></i><i style="background:#3a5a9a"></i><i style="background:#3a5a9a"></i><i style="background:#3a5a9a"></i><i style="background:#3a5a9a"></i><i style="background:#3a5a9a"></i><i style="background:#3a5a9a"></i><i style="background:#2a4a7a"></i><i style="background:#2a4a7a"></i><i style="background:#3a5a9a"></i><i style="background:#3a5a9a"></i><i class="eye" style="background:#b0c8ff"></i><i class="eye" style="background:#d0e0ff"></i><i style="background:#3a5a9a"></i><i style="background:#3a5a9a"></i><i style="background:#3a5a9a"></i><i class="eye" style="background:#b0c8ff"></i><i class="eye" style="background:#d0e0ff"></i><i style="background:#3a5a9a"></i><i style="background:#3a5a9a"></i><i style="background:#3a5a9a"></i><i style="background:#2a4a7a"></i><i style="background:#2a4a7a"></i><i style="background:#3a5a9a"></i><i style="background:#3a5a9a"></i><i class="eye" style="background:#b0c8ff"></i><i class="eye" style="background:#b0c8ff"></i><i style="background:#3a5a9a"></i><i style="background:#3a5a9a"></i><i style="background:#3a5a9a"></i><i class="eye" style="background:#b0c8ff"></i><i class="eye" style="background:#b0c8ff"></i><i style="background:#3a5a9a"></i><i style="background:#3a5a9a"></i><i style="background:#3a5a9a"></i><i style="background:#2a4a7a"></i><i style="background:#2a4a7a"></i><i style="background:#3a5a9a"></i><i style="background:#3a5a9a"></i><i style="background:#3a5a9a"></i><i style="background:#3a5a9a"></i><i style="background:#3a5a9a"></i><i style="background:#3a5a9a"></i><i style="background:#3a5a9a"></i><i style="background:#3a5a9a"></i><i style="background:#3a5a9a"></i><i style="background:#3a5a9a"></i><i style="background:#3a5a9a"></i><i style="background:#3a5a9a"></i><i style="background:#2a4a7a"></i><i style="background:#2a4a7a"></i><i style="background:#3a5a9a"></i><i style="background:#3a5a9a"></i><i style="background:#3a5a9a"></i><i style="background:#3a5a9a"></i><i class="mouth" style="background:#c05050"></i><i class="mouth" style="background:#c05050"></i><i class="mouth" style="background:#c05050"></i><i style="background:#3a5a9a"></i><i style="background:#3a5a9a"></i><i style="background:#3a5a9a"></i><i style="background:#3a5a9a"></i><i style="background:#3a5a9a"></i><i style="background:#2a4a7a"></i><i></i><i style="background:#2a4a7a"></i><i style="background:#2a4a7a"></i><i style="background:#2a4a7a"></i><i style="background:#2a4a7a"></i><i style="background:#2a4a7a"></i><i style="background:#2a4a7a"></i><i style="background:#2a4a7a"></i><i style="background:#2a4a7a"></i><i style="background:#2a4a7a"></i><i style="background:#2a4a7a"></i><i style="background:#2a4a7a"></i><i style="background:#2a4a7a"></i><i></i><i></i><i style="background:#2a4a7a"></i><i style="background:#2a4a7a"></i><i style="background:#2a4a7a"></i><i style="background:#2a4a7a"></i><i style="background:#2a4a7a"></i><i style="background:#2a4a7a"></i><i style="background:#2a4a7a"></i><i style="background:#2a4a7a"></i><i style="background:#2a4a7a"></i><i style="background:#2a4a7a"></i><i style="background:#2a4a7a"></i><i style="background:#2a4a7a"></i><i></i><i class="tent t15" style="background:#1a3a6a"></i><i class="tent t15" style="background:#2a4a8a"></i><i class="tent t15" style="background:#1a3a6a"></i><i class="tent t15" style="background:#2a4a8a"></i><i class="tent t15" style="background:#1a3a6a"></i><i class="tent t15" style="background:#2a4a8a"></i><i class="tent t15" style="background:#2a4a7a"></i><i class="tent t15" style="background:#2a4a7a"></i><i class="tent t15" style="background:#2a4a8a"></i><i class="tent t15" style="background:#1a3a6a"></i><i class="tent t15" style="background:#2a4a8a"></i><i class="tent t15" style="background:#1a3a6a"></i><i class="tent t15" style="background:#2a4a8a"></i><i class="tent t15" style="background:#1a3a6a"></i><i class="tent t16" style="background:#1a3a6a"></i><i class="tent t16" style="background:#2a4a8a"></i><i class="tent t16" style="background:#1a3a6a"></i><i class="tent t16" style="background:#2a4a8a"></i><i class="tent t16" style="background:#1a3a6a"></i><i class="tent t16" style="background:#2a4a8a"></i><i></i><i></i><i class="tent t16" style="background:#2a4a8a"></i><i class="tent t16" style="background:#1a3a6a"></i><i class="tent t16" style="background:#2a4a8a"></i><i class="tent t16" style="background:#1a3a6a"></i><i class="tent t16" style="background:#2a4a8a"></i><i class="tent t16" style="background:#1a3a6a"></i><i class="tent t17" style="background:#2a4a8a"></i><i class="tent t17" style="background:#1a3a6a"></i><i class="tent t17" style="background:#2a4a8a"></i><i class="tent t17" style="background:#1a3a6a"></i><i class="tent t17" style="background:#2a4a8a"></i><i class="tent t17" style="background:#1a3a6a"></i><i></i><i></i><i class="tent t17" style="background:#1a3a6a"></i><i class="tent t17" style="background:#2a4a8a"></i><i class="tent t17" style="background:#1a3a6a"></i><i class="tent t17" style="background:#2a4a8a"></i><i class="tent t17" style="background:#1a3a6a"></i><i class="tent t17" style="background:#2a4a8a"></i><i class="tent t18" style="background:#2a4a8a"></i><i class="tent t18" style="background:#1a3a6a"></i><i class="tent t18" style="background:#2a4a8a"></i><i class="tent t18" style="background:#1a3a6a"></i><i class="tent t18" style="background:#2a4a8a"></i><i></i><i></i><i></i><i></i><i class="tent t18" style="background:#1a3a6a"></i><i class="tent t18" style="background:#2a4a8a"></i><i class="tent t18" style="background:#1a3a6a"></i><i class="tent t18" style="background:#2a4a8a"></i><i class="tent t18" style="background:#2a4a8a"></i><i></i><i class="tent t19" style="background:#2a4a8a"></i><i></i><i class="tent t19" style="background:#1a3a6a"></i><i></i><i></i><i></i><i></i><i></i><i></i><i class="tent t19" style="background:#1a3a6a"></i><i></i><i class="tent t19" style="background:#2a4a8a"></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+    </div>
+    <div class="state-label" id="stateLabel">思考中...</div>
+  </div>
+  <div class="stats">
+    <div class="stat-row"><span class="icon">🔋</span><span class="label">精力</span><div class="bar-wrap"><div class="bar-fill" id="barEnergy"></div></div><span class="val" id="valEnergy">80</span></div>
+    <div class="stat-row"><span class="icon">🍣</span><span class="label">饱食</span><div class="bar-wrap"><div class="bar-fill" id="barHunger"></div></div><span class="val" id="valHunger">60</span></div>
+    <div class="stat-row"><span class="icon">💜</span><span class="label">心情</span><div class="bar-wrap"><div class="bar-fill" id="barMood"></div></div><span class="val" id="valMood">75</span></div>
+    <div class="xp-row"><span class="icon">✨</span><span class="label">XP</span><span class="xp-val" id="valXp">0</span></div>
+  </div>
+  <div class="btns">
+    <button class="btn" id="btnFeed" onclick="doFeed()"><span class="emoji">🍣</span>喂食</button>
+    <button class="btn" id="btnPet" onclick="doPet()"><span class="emoji">🫳</span>摸头</button>
+    <button class="btn" id="btnSleep" onclick="doSleep()"><span class="emoji">💤</span>休息</button>
+    <button class="btn" id="btnTalk" onclick="doTalk()"><span class="emoji">💬</span>说话</button>
+  </div>
+  <div class="dialog">
+    <span class="avatar">🐙</span>
+    <div class="bubble" id="bubble">° 想清楚再动手</div>
+  </div>
+  <div class="btns" style="grid-template-columns:1fr">
+    <button class="btn" id="btnSync" onclick="manualSync()" style="display:flex;align-items:center;justify-content:center;gap:6px;padding:8px"><span style="font-size:16px">☁️</span><span id="syncLabel">同步</span><span id="syncStatus" style="font-size:11px;color:var(--dim);margin-left:4px"></span></button>
+  </div>
+  <div class="footer" id="footer">🌙 深海模式 · 已养 0 天</div>
+</div>
+<script>
+// Quotes
+// ===== 分池语录系统 =====
+// 戳 Tako：短促反应，被碰到的感觉
+const pokeLines={
+  normal:["° 嗯？","° 干嘛~","° 在呢","° 🐙","° 嘿","° 碰到触手了","° 哎呀","° 帽子歪了","° 又是你","° 怎么啦","° 戳戳戳","° 你的手好暖","° 别闹~","° 我没睡着","° 章鱼也怕痒","° 小心墨汁","° 帽子上有星星你看到了吗","° 嗯哼"],
+  hungry:["° 戳我不如喂我...","° 肚子在叫了听到没","° 饿了饿了","° 有吃的吗","° 触手都没力气了"],
+  tired:["° 别戳了...困...","° zzZ...嗯？","° 让我再睡会儿","° 眼皮好重","° 五分钟...再五分钟"],
+  sad:["° ...嗯","° 你终于想起我了","° 好久没人理我了","° ...","° 摸摸我好不好"],
+  happy:["° 嘻嘻","° 又来啦！","° 今天真开心","° 🎉","° 触手舞！"]
+};
+// 说话按钮：深度智慧语录
+const wisdomLines=[
+  "° 想清楚再动手","° 复杂的问题往往有简单的本质","° 八条触手，每条都在思考不同的可能","° 深海里最亮的不是光，是方向",
+  "° 慢一点没关系，方向比速度重要","° 帽子可以歪，逻辑不能歪","° trade-off 想清楚了吗？","° 有时候不做什么比做什么更重要",
+  "° 今天的你比昨天的你好一点就够了","° 🧙 Wit beyond measure is man's greatest treasure",
+  "° 最好的决策是在约束下做出的","° 系统的问题不能靠局部优化解决","° 用户不会告诉你他要什么，但会用脚投票",
+  "° 简单不是少，而是没有多余","° 快速迭代比完美规划更有价值","° 真正的创新往往来自交叉地带",
+  "° 做产品就像深海探索，越深越安静","° 不确定的时候，选那条信息量最大的路","° 好的架构是演化出来的，不是设计出来的",
+  "° 有时候退一步，能看到整片海","° 专注是一种稀缺的超能力","° 问题定义对了，答案就在路上了",
+  "° 别人的最佳实践不是你的最佳实践","° 数据不会说谎，但会被选择性展示","° 在深海里，发光的不一定是珍珠，也可能是鮟鱇鱼",
+  "° 每一次失败都是排除法的胜利","° 复盘不是为了追责，是为了下次少踩坑","° 优先级的本质是放弃的勇气",
+  "° 写文档是为了让未来的自己不骂现在的自己","° 技术是手段，用户体验才是目的"
+];
+// 摸头：温暖回应
+const petLines={
+  normal:["° 嗯...舒服","° 八条触手都开心了","° 谢谢摸摸","° 帽子摸歪了但我不在意","° 再摸一下","° 触手想抱抱你","° 你手好温暖","° 幸福就是这样简单的事","° 被摸的章鱼是幸运的章鱼"],
+  hungry:["° 摸完记得喂饭哦","° 摸头不能当饭吃...但也挺好的","° 虽然饿但被摸了好开心"],
+  tired:["° 嗯...困...但别停","° 摸着好催眠","° 像海浪摇篮一样舒服"],
+  sad:["° ...谢谢你来看我","° 被摸到了...好感动","° 我以为你忘了我"],
+  happy:["° 开心加倍！","° 触手全部张开了！","° 今天被爱着的感觉好好"]
+};
+// 喂食：不同食物反应
+const feedLines=["° 好吃！🍣","° 谢谢投喂！","° 嗯！是我爱吃的","° 吃饱了有力气思考了","° 美味！触手比心","° 饱了饱了","° 这顿不错","° 能不能再来一份","° 章鱼也需要碳水"];
+// 状态感知选择器
+function pickLine(pool){
+  const s=getStatus();
+  let arr;
+  if(typeof pool==='object'&&!Array.isArray(pool)){
+    if(s==='happy'&&pool.happy)arr=pool.happy;
+    else if(s==='hungry'&&pool.hungry)arr=pool.hungry;
+    else if(s==='sleeping'&&pool.tired)arr=pool.tired;
+    else if(s==='sad'&&pool.sad)arr=pool.sad;
+    else arr=pool.normal;
+  }else{arr=pool;}
+  return arr[Math.floor(Math.random()*arr.length)];
+}
+function getStatus(){
+  if(happyUntil&&Date.now()<happyUntil)return'happy';
+  if(forceSleep||state.energy<30)return'sleeping';
+  if(state.hunger<20)return'hungry';
+  if(state.mood<15)return'sad';
+  return'thinking';
+}
+// Cloud Sync
+
+let lastSyncTime=0,syncing=false;
+
+
+
+function updateSyncUI(status){
+  const el=document.getElementById('syncStatus');
+  const label=document.getElementById('syncLabel');
+  if(!el)return;
+  const map={syncing:['⏳','同步中...'],pulled:['✅','已同步'],pushed:['✅','已上传'],saved:['✅','已保存'],error:['❌','同步失败']};
+  const [icon,text]=map[status]||['☁️','同步'];
+  label.textContent=text;
+  if(lastSyncTime>0){
+    const ago=Math.round((Date.now()-lastSyncTime)/1000);
+    el.textContent=ago<60?`${ago}秒前`:`${Math.round(ago/60)}分钟前`;
+  }
+}
+
+function manualSync(){}
+
+// State
+const DEF={energy:80,hunger:60,mood:75,xp:0,createdAt:Date.now(),lastUpdate:Date.now()};
+let state,happyUntil=0,sleepUntil=0,forceSleep=false;
+function loadState(){
+  try{const s=localStorage.getItem('tako-state');if(s){state=JSON.parse(s);applyDecay();}else{state={...DEF};}}
+  catch(e){state={...DEF};}
+}
+function saveLocal(){state.lastUpdate=Date.now();localStorage.setItem('tako-state',JSON.stringify(state));}
+function saveState(){saveLocal();}
+function applyDecay(){
+  const now=Date.now(),dt=(now-state.lastUpdate)/3600000;
+  state.energy=Math.max(0,state.energy-dt*3);
+  state.hunger=Math.max(0,state.hunger-dt*5);
+  state.mood=Math.max(0,state.mood-dt*2);
+  state.lastUpdate=now;
+}
+// UI update
+function barColor(v){
+  if(v>60)return'linear-gradient(90deg,#40c060,#60d080)';
+  if(v>30)return'linear-gradient(90deg,#c0a030,#d0b040)';
+  return'linear-gradient(90deg,#c04040,#d05050)';
+}
+function updateUI(){
+  const e=Math.round(state.energy),h=Math.round(state.hunger),m=Math.round(state.mood);
+  document.getElementById('barEnergy').style.cssText=`width:${e}%;background:${barColor(e)}`;
+  document.getElementById('barHunger').style.cssText=`width:${h}%;background:${barColor(h)}`;
+  document.getElementById('barMood').style.cssText=`width:${m}%;background:${barColor(m)}`;
+  document.getElementById('valEnergy').textContent=e;
+  document.getElementById('valHunger').textContent=h;
+  document.getElementById('valMood').textContent=m;
+  document.getElementById('valXp').textContent=state.xp;
+  // Days
+  const days=Math.floor((Date.now()-state.createdAt)/86400000);
+  // Time of day
+  const hr=new Date().getHours();
+  let timeLabel='☀️ 日间模式';
+  if(hr>=22||hr<6)timeLabel='🌙 深夜模式';
+  else if(hr>=18)timeLabel='🌅 傍晚模式';
+  document.getElementById('footer').textContent=`${timeLabel} · 已养 ${days} 天`;
+  // Night overlay
+  const ov=document.getElementById('nightOverlay');
+  const sb=document.getElementById('starsBg');
+  ov.className='night-overlay';sb.className='stars-bg';
+  if(hr>=22||hr<6){ov.classList.add('night');sb.classList.add('show');}
+  else if(hr>=18){ov.classList.add('evening');sb.classList.add('show');}
+  // Determine behavior state
+  const now=Date.now();
+  const stage=document.getElementById('stage');
+  const label=document.getElementById('stateLabel');
+  const zzz=document.getElementById('zzz');
+  stage.className='stage';zzz.className='zzz';
+  if(now<happyUntil){
+    stage.classList.add('state-happy');label.textContent='开心！✨';label.style.color='#d0b040';
+  }else if(forceSleep||now<sleepUntil){
+    stage.classList.add('state-sleeping');label.textContent='休息中... 💤';label.style.color='#7a8aaa';zzz.classList.add('show');
+  }else if(state.energy<30||(hr>=22||hr<6)&&state.energy<90){
+    stage.classList.add('state-sleeping');label.textContent='困了... 💤';label.style.color='#7a8aaa';zzz.classList.add('show');
+  }else if(state.hunger<20){
+    stage.classList.add('state-hungry');label.textContent='饿了... 🍣';label.style.color='#c05050';
+  }else if(state.mood<15){
+    stage.classList.add('state-sad');label.textContent='心情不好... 😢';label.style.color='#8080a0';
+  }else{
+    stage.classList.add('state-thinking');label.textContent='思考中...';label.style.color='var(--dim)';
+  }
+  // Sleep button state
+  document.getElementById('btnSleep').disabled=(now<sleepUntil);
+}
+// Blink
+let blinkInterval;
+function startBlink(){
+  blinkInterval=setInterval(()=>{
+    const w=document.getElementById('pgWrap');
+    if(document.querySelector('.state-sleeping'))return;
+    w.classList.add('blink');setTimeout(()=>w.classList.remove('blink'),150);
+  },4000);
+}
+// Actions
+function pokeTako(){
+  state.mood=Math.min(100,state.mood+3);
+  state.xp+=1;
+  happyUntil=Date.now()+2000;
+  setBubble(pickLine(pokeLines));
+  spawnParticles();saveState();updateUI();
+}
+function doFeed(){
+  state.hunger=Math.min(100,state.hunger+30);
+  state.mood=Math.min(100,state.mood+5);
+  happyUntil=Date.now()+5000;
+  state.xp+=2;
+  setBubble(pickLine(feedLines));
+  spawnParticles();saveState();updateUI();
+}
+function doPet(){
+  state.mood=Math.min(100,state.mood+15);
+  happyUntil=Date.now()+5000;
+  state.xp+=1;
+  setBubble(pickLine(petLines));
+  spawnParticles();saveState();updateUI();
+}
+function doSleep(){
+  if(Date.now()<sleepUntil)return;
+  sleepUntil=Date.now()+10000;forceSleep=true;
+  setBubble("° 让我休息一会儿...");
+  saveState();updateUI();
+  // Fast energy recovery
+  const si=setInterval(()=>{
+    if(Date.now()>=sleepUntil){clearInterval(si);forceSleep=false;updateUI();return;}
+    state.energy=Math.min(100,state.energy+2);saveState();updateUI();
+  },1000);
+}
+function doTalk(){
+  const q=pickLine(wisdomLines);
+  state.xp+=1;
+  setBubble(q);saveState();updateUI();
+}
+function setBubble(text){document.getElementById('bubble').textContent=text;}
+// Particles
+function spawnParticles(){
+  const c=document.getElementById('particles');
+  const colors=['#d0b040','#b0c8ff','#c05050','#5040a0','#60d080'];
+  for(let i=0;i<8;i++){
+    const p=document.createElement('div');p.className='particle';
+    p.style.left=Math.random()*80+10+'%';p.style.top=Math.random()*60+20+'%';
+    p.style.background=colors[Math.floor(Math.random()*colors.length)];
+    c.appendChild(p);setTimeout(()=>p.remove(),1000);
+  }
+}
+// Stars background
+function initStars(){
+  const sb=document.getElementById('starsBg');
+  for(let i=0;i<30;i++){
+    const s=document.createElement('i');
+    s.style.left=Math.random()*100+'%';s.style.top=Math.random()*100+'%';
+    s.style.animationDelay=Math.random()*3+'s';
+    s.style.width=Math.random()*2+1+'px';s.style.height=s.style.width;
+    sb.appendChild(s);
+  }
+}
+// Tick
+function tick(){
+  const now=Date.now(),dt=1/3600;// 1 second in hours
+  state.energy=Math.max(0,state.energy-dt*3);
+  state.hunger=Math.max(0,state.hunger-dt*5);
+  state.mood=Math.max(0,state.mood-dt*2);
+  updateUI();
+  // Save every 10 seconds
+  if(Math.floor(now/10000)!==Math.floor((now-1000)/10000))saveState();
+}
+// Init
+loadState();initStars();startBlink();updateUI();
+setBubble(quotes[Math.floor(Math.random()*quotes.length)]);
+setInterval(tick,1000);
+// Cloud sync on load
+
+// Update sync time display every 10s
+setInterval(()=>{if(lastSyncTime>0)updateSyncUI('saved');},10000);
+</script>
+</body>
+</html>

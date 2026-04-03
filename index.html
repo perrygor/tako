@@ -220,6 +220,22 @@ let state,happyUntil=0,sleepUntil=0,forceSleep=false;
 function loadState(){
   try{const s=localStorage.getItem('tako-state');if(s){state=JSON.parse(s);applyDecay();}else{state={...DEF};}}
   catch(e){state={...DEF};}
+  // Cloud sync from status.json
+  cloudSync();
+}
+async function cloudSync(){
+  try{
+    const res=await fetch('./status.json?t='+Date.now());
+    if(!res.ok)return;
+    const data=await res.json();
+    const cloud=data.tako;
+    if(cloud&&cloud.lastUpdate>state.lastUpdate){
+      const keys=['energy','hunger','mood','xp','lastUpdate','createdAt'];
+      keys.forEach(k=>{if(cloud[k]!==undefined)state[k]=cloud[k];});
+      saveLocal();updateUI();
+      console.log('☁️ Synced from cloud');
+    }
+  }catch(e){console.log('Cloud sync skipped:',e.message);}
 }
 function saveLocal(){state.lastUpdate=Date.now();localStorage.setItem('tako-state',JSON.stringify(state));}
 function saveState(){saveLocal();}

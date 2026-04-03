@@ -82,8 +82,8 @@ body {
 /* Pixel Grid for Lobster */
 .pixel-canvas {
   display: inline-grid;
-  grid-template-columns: repeat(14, 7px);
-  grid-template-rows: repeat(16, 7px);
+  grid-template-columns: repeat(28, 4px);
+  grid-template-rows: repeat(32, 4px);
   gap: 0;
   image-rendering: pixelated;
   position: relative;
@@ -91,18 +91,20 @@ body {
 }
 .pixel-canvas i {
   display: block;
-  width: 7px;
-  height: 7px;
+  width: 4px;
+  height: 4px;
 }
+/* Lobster palette: outline + 3-tone red + highlights */
+.p-O { background: #501010; }
 .p-R { background: #e04030; }
 .p-r { background: #c03020; }
-.p-H { background: #f06050; }
-.p-D { background: #a02018; }
-.p-e { background: #2a2a4a; }
-.p-a { background: #f0c030; }
+.p-H { background: #f06858; }
+.p-L { background: #f8a090; }
+.p-D { background: #901818; }
+.p-e { background: #1a1a2e; }
 .p-w { background: #ffffff; }
-.p-b { background: #60b0ff; }
-.p-o { background: #f08040; }
+.p-a { background: #f0c030; }
+.p-g { background: #d0a020; }
 .p-_ { background: transparent; }
 
 /* Tako pixel (simplified 8x8) */
@@ -794,24 +796,40 @@ body {
 </div>
 
 <script>
-// === Pixel Lobster Sprite Data (14x16) ===
+// === Pixel Lobster Sprite Data (28x32) with outline ===
 const LOBSTER_SPRITE = [
-  'a____________a',  // 0  触须
-  '_a____RR____a_',  // 1  触须+头顶
-  '____RRHHRR____',  // 2  头
-  '____RweRweR___',  // 3  眼睛
-  '____RRRRRR____',  // 4  脸
-  'HHH__RRRR__HHH',  // 5  ★大钳子上部
-  'HRRH_RRRR_HRRH',  // 6  ★钳子中部（张开的）
-  'HRRH_RRRR_HRRH',  // 7  ★钳子厚实
-  'HHRH_RRRR_HRHH',  // 8  ★钳子下部（钳尖）
-  '_HH__RrrR__HH_',  // 9  钳子根
-  '_____RRRR_____',  // 10 身体
-  '_____rRRr_____',  // 11 身体节
-  '____r_RR_r____',  // 12 腿
-  '____r_RR_r____',  // 13 腿
-  '____RRHHRR____',  // 14 尾扇
-  '___RRRHHRRR___',  // 15 尾扇展开
+  '____a_________________a_____',  // 0  触须
+  '_____a_______________a______',  // 1
+  '______a_____________a_______',  // 2
+  '______a____OOOO____a________',  // 3  头顶轮廓
+  '___________OHHHO___________',  // 4  头高光
+  '__________OHRRHRO__________',  // 5  头
+  '_________OHRRRRHRO_________',  // 6  头宽
+  '_________ORweOOweRO_________',  // 7  眼睛（轮廓眼）
+  '_________ORRRRRRRO_________',  // 8  脸
+  '_________ORRRRRRRO_________',  // 9  下脸
+  '__OOOO___ORRRRRRO___OOOO__',  // 10 ★钳子开始
+  '_OHHHHO__ORRRRRRO__OHHHHO_',  // 11 钳子上（高光）
+  '_OHRRHHO_ORRRRRRO_OHHRRHO_',  // 12 钳子
+  'OHRRRRHOORRRRRRRROOHRRRRHO',  // 13 ★钳子最宽+身体
+  'OHRRRRHO_ORRRRRRO_OHRRRHO_',  // 14 钳子
+  'OHRRRHO__ORRRRRRO__OHRRHO_',  // 15 钳子收
+  '_OHHHO___ORRRRRRO___OHHHO_',  // 16 钳子尖
+  '__OOO____ORRRRRRO____OOO__',  // 17 钳子根
+  '__________ORRRRRO__________',  // 18 身体节1
+  '__________ORDDRRO__________',  // 19 身体节1纹
+  '_________ORRRRRRRO_________',  // 20 身体节2
+  '_________ORRDDRRO__________',  // 21 身体节2纹
+  '__________ORRRRRO__________',  // 22 身体节3
+  '________O__ORRRO__O________',  // 23 腿1
+  '________O__ORRRO__O________',  // 24 腿2
+  '_______O___ORRRO___O_______',  // 25 腿3
+  '___________ORRRO___________',  // 26 尾柄
+  '__________ORRRRRO__________',  // 27 尾扇开始
+  '________OORHHHHRROO________',  // 28 尾扇
+  '_______OORRHHHHRRROO_______',  // 29 尾扇展开
+  '________OORRRRRROO_________',  // 30 尾扇底
+  '_________OOOOOOOO__________',  // 31 尾轮廓
 ];
 
 // Tako sprite (8x8 simplified cute octopus)
@@ -829,8 +847,8 @@ const TAKO_SPRITE = [
 function renderSprite(container, spriteData, cols) {
   if (!container) return;
   container.innerHTML = '';
-  container.style.gridTemplateColumns = `repeat(${cols}, 7px)`;
-  container.style.gridTemplateRows = `repeat(${spriteData.length}, 7px)`;
+  container.style.gridTemplateColumns = `repeat(${cols}, 4px)`;
+  container.style.gridTemplateRows = `repeat(${spriteData.length}, 4px)`;
   for (const row of spriteData) {
     // Pad row to cols length
     const paddedRow = row.padEnd(cols, '_');
@@ -873,7 +891,7 @@ function initSprites() {
     const el = document.getElementById(id);
     if (el) {
       el.classList.add('pixel-canvas');
-      renderSprite(el, LOBSTER_SPRITE, 14);
+      renderSprite(el, LOBSTER_SPRITE, 28);
     }
   }
   // Render Tako in tako scene

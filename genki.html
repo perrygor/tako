@@ -971,7 +971,10 @@ function updateSyncIndicator() {
 // === Status Sync ===
 async function syncStatus() {
   try {
-    const res = await fetch('./status.json?t=' + Date.now());
+    // Use GitHub API for zero-cache real-time status
+    const res = await fetch('https://api.github.com/repos/perrygor/tako/contents/status.json', {
+      headers: { 'Accept': 'application/vnd.github.raw' }
+    });
     const data = await res.json();
     
     const scene = data.genki?.scene || data.genki?.status || 'idle';

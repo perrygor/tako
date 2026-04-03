@@ -1,0 +1,18 @@
+{
+  "tako": {
+    "energy": 77,
+    "hunger": 88,
+    "mood": 87,
+    "xp": 7,
+    "lastUpdate": 1775213460000,
+    "createdAt": 1775196000000,
+    "behavior": "thinking"
+  },
+  "genki": {
+    "status": "idle",
+    "lastActive": 1775213460000,
+    "todayTurns": 50,
+    "activeTasks": 0
+  },
+  "updatedAt": "2026-04-03T22:11:00+08:00"
+}
